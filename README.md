@@ -25,7 +25,7 @@ A secure implementation of the Diffie-Hellman key exchange protocol using OpenSS
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/dh-key-exchange.git
+https://github.com/TaylorFung/dh-key-exchange.git
 cd dh-key-exchange
 
 # Install dependencies (Ubuntu/Debian)
