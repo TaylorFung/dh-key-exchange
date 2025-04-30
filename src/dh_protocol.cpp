@@ -5,7 +5,7 @@
 
 // 生成DH参数
 DHParams generate_dh_params() {
-    DHParams params;
+    DHParams params={nullptr,nullptr};
     BN_CTX* ctx = BN_CTX_new();
     if (!ctx) {
         throw std::runtime_error("Failed to create BN_CTX");
