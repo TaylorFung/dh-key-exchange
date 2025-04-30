@@ -1,6 +1,6 @@
 #include "base64.h"
 #include <stdexcept>
-
+#include <cstdint>
 // Base64编码表
 static const std::string base64_chars = 
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
