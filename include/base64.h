@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-
+#include <cstdint>
 // Base64编码函数：将二进制数据转换为Base64字符串
 std::string base64_encode(const std::vector<uint8_t>& data);
 
