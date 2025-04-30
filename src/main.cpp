@@ -3,6 +3,7 @@
 #include "dh_protocol.h"
 #include "crypto_utils.h"
 #include "base64.h"
+#include <openssl/err.h>  // 添加这个头文件
 
 // 自动释放BIGNUM的智能指针
 using BNPtr = std::unique_ptr<BIGNUM, decltype(&::BN_free)>;
@@ -16,9 +17,11 @@ void print_bn_base64(const std::string& label, const BIGNUM* bn) {
 
 int main() {
     try {
-        // 初始化OpenSSL
-        OpenSSL_add_all_algorithms();
-        ERR_load_crypto_strings();
+        // 初始化OpenSSL（使用新的API）
+        OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS | 
+                          OPENSSL_INIT_ADD_ALL_CIPHERS | 
+                          OPENSSL_INIT_ADD_ALL_DIGESTS, 
+                          nullptr);
 
         // 1. 生成DH参数 (p和g)
         std::cout << "Generating DH parameters..." << std::endl;
@@ -67,9 +70,8 @@ int main() {
             return 1;
         }
 
-        // 清理OpenSSL
-        EVP_cleanup();
-        ERR_free_strings();
+        // OpenSSL 3.0不需要显式清理
+        // 资源会在程序退出时自动清理
 
         return 0;
     } catch (const std::exception& e) {
