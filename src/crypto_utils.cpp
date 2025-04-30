@@ -33,34 +33,67 @@ BIGNUM* generate_safe_prime(int bits) {
     BN_CTX_free(ctx);
     return p;
 }
-
 // 检查一个数是否是安全的质数
 bool is_safe_prime(const BIGNUM* p, BN_CTX* ctx) {
+    if (!p || !ctx) {
+        return false;
+    }
+
     BIGNUM* q = BN_new();
-    BIGNUM* two = BN_new();
+    if (!q) {
+        return false;
+    }
+
     bool result = false;
-
-    if (!q || !two) {
-        goto cleanup;
-    }
-
-    BN_set_word(two, 2);
     
-    // q = (p-1)/2
-    if (!BN_rshift1(q, p) || !BN_sub_word(q, 1)) {
-        goto cleanup;
+    // 计算 q = (p-1)/2
+    if (!BN_sub(q, p, BN_value_one()) || // q = p-1
+        !BN_rshift1(q, q)) {              // q = (p-1)/2
+        BN_free(q);
+        return false;
     }
 
-    // 检查p和q都是质数
-    result = (BN_is_prime_ex(p, BN_prime_checks, ctx, NULL) && 
-              BN_is_prime_ex(q, BN_prime_checks, ctx, NULL));
+    // 检查 p 和 q 是否都是质数
+    if (BN_is_prime_ex(p, BN_prime_checks, ctx, nullptr) == 1 &&
+        BN_is_prime_ex(q, BN_prime_checks, ctx, nullptr) == 1) {
+        result = true;
+    }
 
-cleanup:
     BN_free(q);
-    BN_free(two);
     return result;
 }
 
+// 生成安全的质数
+BIGNUM* generate_safe_prime(int bits) {
+    BN_CTX* ctx = BN_CTX_new();
+    if (!ctx) {
+        throw std::runtime_error("Failed to create BN_CTX");
+    }
+
+    BIGNUM* p = BN_new();
+    if (!p) {
+        BN_CTX_free(ctx);
+        throw std::runtime_error("Failed to create BIGNUM");
+    }
+
+    // 使用 OpenSSL 的安全质数生成函数
+    // 第三个参数设为 1 表示生成安全质数
+    if (!BN_generate_prime_ex(p, bits, 1, nullptr, nullptr, nullptr)) {
+        BN_free(p);
+        BN_CTX_free(ctx);
+        throw std::runtime_error("Failed to generate safe prime");
+    }
+
+    // 验证生成的是安全质数
+    if (!is_safe_prime(p, ctx)) {
+        BN_free(p);
+        BN_CTX_free(ctx);
+        throw std::runtime_error("Generated prime is not safe");
+    }
+
+    BN_CTX_free(ctx);
+    return p;
+}
 // 生成生成元 (原根)
 BIGNUM* find_generator(const BIGNUM* p, BN_CTX* ctx) {
     BIGNUM* g = BN_new();
